@@ -8,7 +8,17 @@ module FizzBuzz exposing (many, single)
 -}
 single : Int -> String
 single number =
-    Debug.todo "Implement me"
+    if modBy 3 number == 0 && modBy 5 number == 0 then
+        "FizzBuzz"
+
+    else if modBy 3 number == 0 then
+        "Fizz"
+
+    else if modBy 5 number == 0 then
+        "Buzz"
+
+    else
+        String.fromInt number
 
 
 {-| Compute a sentence of following the 'Fizz Buzz' rules, starting and ending at a certain position.
@@ -20,4 +30,11 @@ Example output `many 1 3 == "1, 2, Fizz"`
 -}
 many : Int -> Int -> String
 many start end =
-    Debug.todo "Implement me"
+    if start > end then
+        ""
+
+    else if start == end then
+        single start
+
+    else
+        single start ++ ", " ++ many (start + 1) end

@@ -12,14 +12,12 @@ import Html.Events exposing (onClick)
 
 
 type alias Model =
-    -- TODO add two properties to represent if the cards are open or closed
-    {}
+    { firstCard : Bool, secondCard : Bool }
 
 
-type
-    Msg
-    -- TODO Remove the `ToDo` and replace it with two different 'messages' representing the user's actions.
-    = ToDo
+type Msg
+    = ToggleFirst
+    | ToggleSecond
 
 
 
@@ -28,8 +26,7 @@ type
 
 initialModel : Model
 initialModel =
-    -- TODO Setup the initial model: fill in the initial values for the properties you've specified in the first TODO
-    {}
+    { firstCard = True, secondCard = False }
 
 
 
@@ -39,10 +36,11 @@ initialModel =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        ToDo ->
-            -- TODO Update the model based on your action. An example from the counter is listed below:
-            -- { model | count = model.count + 1 }
-            model
+        ToggleFirst ->
+            { model | firstCard = not model.firstCard }
+
+        ToggleSecond ->
+            { model | secondCard = not model.secondCard }
 
 
 
@@ -54,19 +52,23 @@ view model =
     div []
         [ div
             [ style "display" "inline-block"
-
-            -- TODO Event to trigger the first card to be closed or opened
+            , onClick ToggleFirst
             ]
-            [ -- TODO Add logic to render the first card visible or hidden
-              Card.viewCard (Card "#69F" "A")
+            [ if model.firstCard then
+                Card.viewCard (Card "#69F" "A")
+
+              else
+                Card.hidden
             ]
         , div
             [ style "display" "inline-block"
-
-            -- TODO Event to trigger the second card to be closed or opened
+            , onClick ToggleSecond
             ]
-            [ -- TODO Add logic to render the second card visible or hidden
-              Card.viewCard (Card "#3fa" "B")
+            [ if model.secondCard then
+                Card.viewCard (Card "#3fa" "B")
+
+              else
+                Card.hidden
             ]
         ]
 

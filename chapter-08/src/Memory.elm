@@ -25,12 +25,16 @@ type Attempt
 
 
 type alias Spot =
-    { -- TODO (part 2) Introduce a new type `State` to represent the state of a spot.
-      -- This should be able to represent 3 different states (opened, closed, removed)
-      open : Bool
+    { state : State
     , card : Card
     , location : Location
     }
+
+
+type State
+    = Opened
+    | Closed
+    | Removed
 
 
 type Msg
@@ -44,9 +48,7 @@ type Msg
 initialModel : Model
 initialModel =
     { grid = generateGrid
-
-    -- TODO (part 1) Set the initial value of the attempt
-    , attempt = Debug.todo "Set initial value"
+    , attempt = NoPick
     }
 
 
@@ -57,9 +59,22 @@ initialModel =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        -- TODO (part 1) A spot is toggled, ensure the state of the attempt.
         Toggle spot ->
-            { model | grid = toggleInGrid spot model.grid }
+            case model.attempt of
+                NoPick ->
+                    { model
+                        | grid = toggleInGrid spot model.grid
+                        , attempt = FirstPick spot
+                    }
+
+                FirstPick first ->
+                    { model
+                        | grid = toggleInGrid spot model.grid
+                        , attempt = SecondPick first spot
+                    }
+
+                SecondPick first second ->
+                    Debug.todo "Implement me"
 
 
 toggleInGrid : Spot -> Grid -> Grid
@@ -71,11 +86,15 @@ toggleInGrid spot grid =
 
 toggleSpot : Spot -> Spot
 toggleSpot s =
-    -- TODO (part 2) Apply the following transistions:
-    -- open -> closed
-    -- closed -> open
-    -- removed -> removed
-    { s | open = not s.open }
+    case s.state of
+        Opened ->
+            { s | state = Closed }
+
+        Closed ->
+            { s | state = Opened }
+
+        Removed ->
+            { s | state = Removed }
 
 
 
@@ -105,18 +124,20 @@ viewCard : Spot -> Html Msg
 viewCard spot =
     div
         [ style "display" "inline-block"
-
-        -- TODO (part 1) Ensure you can only open spots, not close them.
-        -- The game will be responsible for closing them once you have finished your attempt.
-        , onClick (Toggle spot)
         ]
-        [ -- TODO (part 2) An `if` will not suffice anymore to render the correct state.
-          -- Move to a more powerfull structure.
-          if spot.open then
-            Card.viewCard spot.card
+        [ case spot.state of
+            Opened ->
+                Card.viewCard spot.card
 
-          else
-            Card.hidden
+            Closed ->
+                div
+                    [ style "display" "inline-block"
+                    , onClick (Toggle spot)
+                    ]
+                    [ Card.hidden ]
+
+            Removed ->
+                Card.placeholder
         ]
 
 
@@ -160,9 +181,7 @@ generateGrid =
 closedSpotFromCard : Int -> Card -> Spot
 closedSpotFromCard index card =
     { card = card
-
-    -- TODO (part 2) Set the correct state here
-    , open = False
+    , state = Closed
     , location = locationFromInt index
     }
 

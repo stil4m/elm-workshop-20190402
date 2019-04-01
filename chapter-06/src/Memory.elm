@@ -12,15 +12,14 @@ import Html.Events exposing (onClick)
 
 
 type alias Model =
-    -- TODO We are going to refactor the model.
-    -- You can remove the existing model, uncomment the code below and work from there.
-    -- Maybe the first step would be is to think about what a `Spot` is?
-    --
-    -- { spot1 : Spot
-    -- , spot2 : Spot
-    -- }
-    { firstCard : Bool
-    , secondCard : Bool
+    { spot1 : Spot
+    , spot2 : Spot
+    }
+
+
+type alias Spot =
+    { card : Card
+    , open : Bool
     }
 
 
@@ -35,25 +34,34 @@ type Msg
 
 initialModel : Model
 initialModel =
-    { firstCard = True, secondCard = False }
+    { spot1 =
+        { card = Card "#69F" "A"
+        , open = True
+        }
+    , spot2 =
+        { card = Card "#3fa" "B"
+        , open = False
+        }
+    }
 
 
 
 -- Update Functions / User Interaction
--- TODO You will probably need this function
--- toggleSpot : Spot -> Spot
--- toggleSpot spot =
---     Debug.todo "Implement me"
+
+
+toggleSpot : Spot -> Spot
+toggleSpot spot =
+    { spot | open = not spot.open }
 
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
         ToggleFirst ->
-            { model | firstCard = not model.firstCard }
+            { model | spot1 = toggleSpot model.spot1 }
 
         ToggleSecond ->
-            { model | secondCard = not model.secondCard }
+            { model | spot2 = toggleSpot model.spot2 }
 
 
 
@@ -67,8 +75,8 @@ view model =
             [ style "display" "inline-block"
             , onClick ToggleFirst
             ]
-            [ if model.firstCard then
-                Card.viewCard (Card "#69F" "A")
+            [ if model.spot1.open then
+                Card.viewCard model.spot1.card
 
               else
                 Card.hidden
@@ -77,8 +85,8 @@ view model =
             [ style "display" "inline-block"
             , onClick ToggleSecond
             ]
-            [ if model.secondCard then
-                Card.viewCard (Card "#3fa" "B")
+            [ if model.spot2.open then
+                Card.viewCard model.spot2.card
 
               else
                 Card.hidden

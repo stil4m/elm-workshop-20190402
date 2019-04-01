@@ -23,7 +23,39 @@ Examples:
 -}
 tax : String -> String -> Maybe Float
 tax amount rate =
-    Debug.todo "Implement me"
+    -- Solution 1
+    -- case String.toFloat amount of
+    --     Just amount_ ->
+    --         case String.toInt rate of
+    --             Just rate_ ->
+    --                 Just (amount_ * (toFloat rate_ / 100 + 1.0))
+    --
+    --             Nothing ->
+    --                 Nothing
+    --
+    --     Nothing ->
+    --         Nothing
+    -- Solution 2
+    -- case ( String.toFloat amount, String.toInt rate ) of
+    --     ( Just amount_, Just rate_ ) ->
+    --         Just (amount_ * (toFloat rate_ / 100 + 1.0))
+    --
+    --     _ ->
+    --         Nothing
+    -- Solution 3
+    -- case Maybe.map2 Tuple.pair (String.toFloat amount) (String.toInt rate) of
+    --     Just ( amount_, rate_ ) ->
+    --         Just (amount_ * (toFloat rate_ / 100 + 1.0))
+    --
+    --     _ ->
+    --         Nothing
+    -- Solution 4
+    Maybe.map2 (*)
+        (String.toFloat amount)
+        (String.toInt rate
+            |> Maybe.map toFloat
+            |> Maybe.map (\f -> f / 100 + 1.0)
+        )
 
 
 {-| Compute the product of the first two odd values.
@@ -40,4 +72,19 @@ Examples:
 -}
 productOfLowestOdds : List Int -> Maybe Int
 productOfLowestOdds input =
-    Debug.todo "Implement me"
+    input
+        |> List.filter isOdd
+        |> List.sort
+        |> List.take 2
+        |> (\list ->
+                if List.length list /= 2 then
+                    Nothing
+
+                else
+                    Just (List.product list)
+           )
+
+
+isOdd : Int -> Bool
+isOdd n =
+    modBy 2 n == 1

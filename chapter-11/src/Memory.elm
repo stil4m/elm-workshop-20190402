@@ -20,8 +20,14 @@ type alias Model =
     { grid : Grid
     , attempt : Attempt
     , now : Int
-    , started : Maybe Int
+    , state : GameState
     }
+
+
+type GameState
+    = NotStarted
+    | Started Int
+    | Finished Int
 
 
 type Attempt
@@ -59,7 +65,7 @@ initialModel =
     ( { grid = []
       , attempt = NoPick
       , now = 0
-      , started = Nothing
+      , state = NotStarted
       }
     , Cmd.none
     )
@@ -73,7 +79,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Start ->
-            ( { model | started = Just model.now, grid = generateGrid model.now }
+            ( { model | state = Started model.now, grid = generateGrid model.now }
             , Cmd.none
             )
 
@@ -83,11 +89,10 @@ update msg model =
             )
 
         HandleResult ->
-            ( case model.attempt of
-                SecondPick first second ->
-                    { model
-                        | attempt = NoPick
-                        , grid =
+            ( case ( model.attempt, model.state ) of
+                ( SecondPick first second, Started since ) ->
+                    let
+                        newGrid =
                             if first.card == second.card then
                                 model.grid
                                     |> removeFromGrid first
@@ -97,6 +102,16 @@ update msg model =
                                 model.grid
                                     |> toggleInGrid first
                                     |> toggleInGrid second
+                    in
+                    { model
+                        | attempt = NoPick
+                        , grid = newGrid
+                        , state =
+                            if isGridEmpty newGrid then
+                                Finished (Util.diffInMillisToSeconds model.now since)
+
+                            else
+                                model.state
                     }
 
                 _ ->
@@ -164,11 +179,19 @@ toggleSpot s =
 
 view : Model -> Html Msg
 view model =
-    case model.started of
-        Nothing ->
+    case model.state of
+        NotStarted ->
             startButton
 
-        Just momentOfStart ->
+        Finished duration ->
+            div []
+                [ text "Finished in"
+                , text (String.fromInt duration)
+                , text " second(s). Start again? "
+                , div [] [ startButton ]
+                ]
+
+        Started momentOfStart ->
             div []
                 [ div []
                     [ text "Started "

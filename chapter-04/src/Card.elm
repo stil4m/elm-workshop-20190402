@@ -8,11 +8,11 @@ main : Html msg
 main =
     div []
         [ h1 [] [ text "A single card" ]
-        , viewCard "#ff89de" "A"
+        , viewCard (Card "#ff89de" "A")
         , h1 [] [ text "Multiple cards beside each other" ]
         , div []
-            [ viewCard "#69f" "B"
-            , viewCard "#5fd" "C"
+            [ viewCard (Card "#69f" "B")
+            , viewCard (Card "#5fd" "C")
             ]
         , h1 [] [ text "A hidden card" ]
         , hidden
@@ -21,22 +21,26 @@ main =
         ]
 
 
-viewCard : String -> String -> Html msg
-viewCard colour textValue =
-    -- TODO Create a div with the correct styling (use `cardStyling`) and text.
-    text "todo"
+type alias Card =
+    { colour : String, text : String }
+
+
+viewCard : Card -> Html msg
+viewCard card =
+    div (cardStyling "solid" card.colour)
+        [ text card.text ]
 
 
 hidden : Html msg
 hidden =
-    -- TODO Create a div with the correct styling (use `cardStyling`) and *no* text.
-    text "todo"
+    div (cardStyling "solid" "#ccc")
+        []
 
 
 placeholder : Html msg
 placeholder =
-    -- TODO Create a div with the correct styling (use `cardStyling`) and *no* text.
-    text "todo"
+    div (cardStyling "dotted" "#fff")
+        []
 
 
 {-| The generic styles for a card. You can adjust the type of border ("solid"/"dotted"), and configure the background colour.

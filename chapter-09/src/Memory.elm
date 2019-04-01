@@ -6,6 +6,7 @@ import Html exposing (..)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import List.Extra
+import Util
 
 
 
@@ -38,9 +39,8 @@ type State
 
 
 type Msg
-    = -- TODO Add an additional case to handle the result (`HandleResults`) when a user has picked two spots
-      -- We will trigger this after an interval once he/she made all required actions
-      Toggle Spot
+    = Toggle Spot
+    | HandleResult
 
 
 
@@ -63,12 +63,28 @@ initialModel =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        {- TODO Imlement logic for the `HandleResult` variant.
-           We only want to do things if we are actually in the `SecondPick` attempt.
-           - If the cards from both spots are the same, we should set the spots on the `Removed` state (`removeFromGrid`).
-           - If the cards from both spots are the same, we should toggle the spots (`toggleInGrid`).
-           - We should always reset the attempt.
-        -}
+        HandleResult ->
+            ( case model.attempt of
+                SecondPick first second ->
+                    { model
+                        | attempt = NoPick
+                        , grid =
+                            if first.card == second.card then
+                                model.grid
+                                    |> removeFromGrid first
+                                    |> removeFromGrid second
+
+                            else
+                                model.grid
+                                    |> toggleInGrid first
+                                    |> toggleInGrid second
+                    }
+
+                _ ->
+                    model
+            , Cmd.none
+            )
+
         Toggle spot ->
             case model.attempt of
                 NoPick ->
@@ -84,23 +100,23 @@ update msg model =
                         | grid = toggleInGrid spot model.grid
                         , attempt = SecondPick first spot
                       }
-                    , -- TODO The user has picked the second spot.
-                      -- We want to schedule the new action we have just created after .7 seconds
-                      -- You can use the `delay` function that was added in the `Util.elm` file.
-                      Cmd.none
+                    , Util.delay 700 HandleResult
                     )
 
                 SecondPick first second ->
-                    -- TODO It turns out that we do not want to do anything here.
-                    -- Should be easy right?
-                    Debug.todo "Implement me"
+                    ( model, Cmd.none )
 
 
 removeFromGrid : Spot -> Grid -> Grid
 removeFromGrid spot grid =
-    -- TODO Implement this Function
-    -- Take a look at `toggleInGrid` and change it accordingly.
-    Debug.todo "Impelment me"
+    List.Extra.updateAt spot.location.y
+        (List.Extra.updateAt spot.location.x removeSpot)
+        grid
+
+
+removeSpot : Spot -> Spot
+removeSpot s =
+    { s | state = Removed }
 
 
 toggleInGrid : Spot -> Grid -> Grid

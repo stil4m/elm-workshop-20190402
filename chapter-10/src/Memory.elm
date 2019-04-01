@@ -20,8 +20,7 @@ type alias Model =
     { grid : Grid
     , attempt : Attempt
     , now : Int
-
-    -- TODO Add a property `started`, which will represent if the game is started at a given point in time (`Maybe Int`).
+    , started : Maybe Int
     }
 
 
@@ -46,7 +45,7 @@ type State
 
 type Msg
     = Toggle Spot
-      -- TODO Add a `Start` message, indicating the game will start
+    | Start
     | Tick Time.Posix
     | HandleResult
 
@@ -57,12 +56,10 @@ type Msg
 
 initialModel : ( Model, Cmd Msg )
 initialModel =
-    ( { -- TODO If we have not started the game, just set up the grid as an empty list
-        grid = generateGrid 42
+    ( { grid = []
       , attempt = NoPick
       , now = 0
-
-      -- TODO Set the initial value for the `started` property
+      , started = Nothing
       }
     , Cmd.none
     )
@@ -75,9 +72,11 @@ initialModel =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        -- TODO If the game should start, updated the model in the appropriate manner.
-        -- The `started` property should be set up with the `now` value.
-        -- Also generate the grid with the appropriate seed.
+        Start ->
+            ( { model | started = Just model.now, grid = generateGrid model.now }
+            , Cmd.none
+            )
+
         Tick posix ->
             ( { model | now = Time.posixToMillis posix }
             , Cmd.none
@@ -165,17 +164,19 @@ toggleSpot s =
 
 view : Model -> Html Msg
 view model =
-    -- TODO Show the grid only if the game has started.
-    -- Otherwise, render a button which can be clicked to start the game (see `startButton`)
-    div []
-        [ div []
-            [-- TODO Once the game is started, render the amount of seconds elapsed:
-             -- "Started .. second(s) ago"
-             -- Hint: use `now` and the time that the game was started
-             -- Hint: you can use the utility function `diffInMillisToSeconds` from `Util`
-            ]
-        , viewGrid model.grid
-        ]
+    case model.started of
+        Nothing ->
+            startButton
+
+        Just momentOfStart ->
+            div []
+                [ div []
+                    [ text "Started "
+                    , text (String.fromInt (Util.diffInMillisToSeconds model.now momentOfStart))
+                    , text " second(s) ago."
+                    ]
+                , viewGrid model.grid
+                ]
 
 
 viewGrid : Grid -> Html Msg
@@ -213,8 +214,7 @@ viewCard spot =
 
 startButton : Html Msg
 startButton =
-    -- TODO Finish implmenetation of the function
-    button [ onClick (Debug.todo "Trigger appropriate action") ]
+    button [ onClick Start ]
         [ text "Start game" ]
 
 
